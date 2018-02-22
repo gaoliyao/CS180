@@ -260,7 +260,7 @@ public class BlackBox {
             printbox();
         }
         else if (deflectionCheck(i-1, j-1)){
-            box[i-1][j-1] = 'H';
+            box[i-1][j-1] = 'D';
             printbox();
         }
         else if (straightRay(i-1, j-1)){
@@ -279,14 +279,14 @@ public class BlackBox {
     public static boolean hitcheck(int i, int j) {
         if (isEdge(i)){
             for (int n=1;n<size-1;n++){
-                if (box[i][n] == '0'){
+                if (box[n][j] == '0'){
                     return true;
                 }
             }
         }
         else if (isEdge(j)){
             for (int n=1;n<size-1;n++){
-                if (box[n][i] == '0'){
+                if (box[i][n] == '0'){
                     return true;
                 }
             }
@@ -389,14 +389,14 @@ public class BlackBox {
     public static boolean straightRay(int i, int j){
         if (isEdge(i)){
             for (int n=1;n<size-1;n++){
-                if (box[i][n] == '0'){
+                if (box[n][j] == '0'){
                     return false;
                 }
             }
         }
         else if (isEdge(j)){
             for (int n=1;n<size-1;n++){
-                if (box[n][i] == '0'){
+                if (box[i][n] == '0'){
                     return false;
                 }
             }
@@ -453,7 +453,7 @@ public class BlackBox {
             if (input.length() == 3 && input.contains(",")){
                 // check
                 if (input.charAt(0) == '1' || input.charAt(2) == '1'
-                        || input.charAt(0) == '1'+size-1 || input.charAt(0) == '1'+size-1) {
+                        || input.charAt(0) == '1'+size-1 || input.charAt(2) == '1'+size-1) {
                     return 2;
                 }
                 // guess

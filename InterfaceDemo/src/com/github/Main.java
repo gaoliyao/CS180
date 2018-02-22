@@ -1,11 +1,18 @@
 package com.github;
 
 
-public class Main implements Constants {
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Iterator;
+
+public class Main {
 
     public static void main(String[] args) {
-	    System.out.println(X);
-	    System.out.println(Y);
-	    System.out.println(Z);
+    	Fibonacci fibonacci = new Fibonacci(100);
+    	for (Object i:fibonacci){
+			System.out.println(i);
+		}
     }
+
+
 }

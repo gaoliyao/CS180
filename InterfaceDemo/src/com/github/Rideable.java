@@ -5,8 +5,16 @@ package com.github;
  */
 public interface Rideable {
     void mount();
+
     void dismount();
+
     void move(boolean forward);
+
     void turn(int direction);
+
     void setSpeed(double mph);
+
+    default void getFUll() {
+
+    }
 }

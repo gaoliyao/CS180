@@ -179,14 +179,31 @@ public class BlackBox {
             String input = sc.nextLine();
             int mode = inputHandler(input);
             if (mode == -1){
-                System.out.println("Please make sure your input is valid. (quit to exit)");
+                System.out.println("Please make sure your input is valid.");
+                System.out.println("Choose the new coordinates (row, column) to play the next step or say submit/quit to end the game: ");
+                continue;
+            }
+            else if (mode == -2){
+                System.out.println("Please make sure your input is valid (POINT AT THE CORNER IS INVALID).");
+                System.out.println("Choose the new coordinates (row, column) to play the next step or say submit/quit to end the game: ");
                 continue;
             }
             else if (mode == 0){
                 isContinue = false;
             }
             else if (mode == 1){
+                System.out.print("Your score is ");
+                for (int[] xy:guess){
+                    int i = xy[0];
+                    int j = xy[1];
+                    if (box[i][j] != '0'){
+                        score--;
+                    }
+                }
+                System.out.print(score);
+                System.out.print("\n");
                 printbox(2);
+                System.out.println("Welcome to the BlackBox Game! Please enter the difficulty level: (quit to exit)");
             }
             else if (mode == 2){
                 int x = Integer.parseInt(""+input.charAt(0));
@@ -199,6 +216,7 @@ public class BlackBox {
                 boolean isValid = guess(x, y);
                 if (!isValid){
                     System.out.println("You can only guess for three points!");
+                    System.out.println("Choose the new coordinates (row, column) to play the next step or say submit/quit to end the game: ");
                 }
             }
             else{
@@ -451,13 +469,20 @@ public class BlackBox {
         }
         else{
             if (input.length() == 3 && input.contains(",")){
+
+                if ((input.charAt(0) == '1' || input.charAt(0) == '1'+size-1) && (input.charAt(2) == '1'
+                        || input.charAt(2) == '1'+size-1)){
+                    return -2;
+                }
                 // check
                 if (input.charAt(0) == '1' || input.charAt(2) == '1'
                         || input.charAt(0) == '1'+size-1 || input.charAt(2) == '1'+size-1) {
+                    score++;
                     return 2;
                 }
                 // guess
                 else{
+                    score++;
                     return 3;
                 }
             }

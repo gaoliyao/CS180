@@ -6,7 +6,7 @@ import java.util.Scanner;
 
 /**
  * Created by Sripath Mishra on 9/8/2017.
- *
+ * Liyao Gao
  */
 public class BlackBox {
     public static char box[][]; // The matrix for the game.
@@ -208,7 +208,7 @@ public class BlackBox {
             else if (mode == 2){
                 int x = Integer.parseInt(""+input.charAt(0));
                 int y = Integer.parseInt(""+input.charAt(2));
-                check(x, y);
+                check(x-1, y-1);
             }
             else if (mode == 3){
                 int x = Integer.parseInt(""+input.charAt(0));
@@ -269,25 +269,24 @@ public class BlackBox {
         //Todo:Check for a reflection
         //Todo:Check for a bounce
         //Todo:Print the statement mentioned in the handout in case of a placing of 4th or more ball.
-        if (hitcheck(i-1, j-1)){
-            box[i-1][j-1] = 'H';
-            printbox();
-        }
-        else if (reflectionCheck(i-1, j-1)){
-            box[i-1][j-1] = 'R';
-            printbox();
-        }
-        else if (deflectionCheck(i-1, j-1)){
-            box[i-1][j-1] = 'D';
-            printbox();
-        }
-        else if (straightRay(i-1, j-1)){
-            box[i-1][j-1] = '1';
-            printbox();
-        }
-        else{
-            System.out.println("???");
-            printbox();
+        if (i>=0 && i <= size-1 && j>=0 && j<=size-1) {
+            if (hitcheck(i, j)) {
+                box[i][j] = 'H';
+                printbox();
+            } else if (reflectionCheck(i, j)) {
+                box[i][j] = 'R';
+                printbox();
+            } else if (deflectionCheck(i, j)) {
+                box[i][j] = 'D';
+                printbox();
+            } else if (straightRay(i, j)) {
+                box[i][j] = '1';
+                printbox();
+
+            } else {
+                System.out.println("???");
+                printbox();
+            }
         }
     }
     /**
@@ -295,6 +294,9 @@ public class BlackBox {
      *
      */
     public static boolean hitcheck(int i, int j) {
+        if (i<0 || j<0){
+            return false;
+        }
         if (isEdge(i)){
             for (int n=1;n<size-1;n++){
                 if (box[n][j] == '0'){
@@ -324,6 +326,8 @@ public class BlackBox {
      *
      */
     public static boolean reflectionCheck(int i, int j) {
+        if (i<0 || j<0){
+            return false;}
         if (isEdge(i)){
             if (i == 0){
                 if (box[1][j+1] == '0' || box[1][j-1] == '0'){
@@ -383,19 +387,21 @@ public class BlackBox {
      *
      */
     public static boolean deflectionCheck(int i, int j) {
+        if (i<0 || j<0){
+            return false;}
         if (isEdge(i)){
-                    for (int n=1;n<size-1;n++){
-                        if (box[n][j-1] == '0' || box[n][j+1] == '0'){
-                            return true;
-                        }
+            for (int n=1;n<size-1;n++){
+                if (box[n][j-1] == '0' || box[n][j+1] == '0'){
+                    return true;
+                }
 
             }
         }
         if (isEdge(j)){
-                    for (int n=1;n<size-1;n++){
-                        if (box[i-1][n] == '0' && box[i+1][n] == '0'){
-                            return true;
-                        }
+            for (int n=1;n<size-1;n++){
+                if (box[i-1][n] == '0' && box[i+1][n] == '0'){
+                    return true;
+                }
             }
         }
         return false;
@@ -405,6 +411,8 @@ public class BlackBox {
      *
      */
     public static boolean straightRay(int i, int j){
+        if (i<0 || j<0){
+            return false;}
         if (isEdge(i)){
             for (int n=1;n<size-1;n++){
                 if (box[n][j] == '0'){
@@ -470,7 +478,7 @@ public class BlackBox {
         else{
             if (input.length() == 3 && input.contains(",")){
 
-                if ((input.charAt(0) == '1' || input.charAt(0) == '1'+size-1) && (input.charAt(2) == '1'
+                if ((input.charAt(0) <= '1' || input.charAt(0) == '1'+size-1) && (input.charAt(2) <= '1'
                         || input.charAt(2) == '1'+size-1)){
                     return -2;
                 }

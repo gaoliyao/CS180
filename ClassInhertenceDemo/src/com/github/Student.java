@@ -28,4 +28,8 @@ public class Student extends Person {
     public void setGrade(String grade) {
         this.grade = grade;
     }
+    @Override
+    public int returnAmount(int num){
+        return num+1;
+    }
 }

@@ -53,7 +53,7 @@ class BlackBox1 {
         System.out.println("Welcome to the BlackBox Game! Please enter the difficulty level: (quit to exit)");
         String level = sc.nextLine();
         int size = difficultySetter(level);
-        BlackBox blackBox = new BlackBox(size, 3, 0, false, 0);
+        BlackBox blackBox = new BlackBox(size, 3, 1, false, 0);
         blackBox.initialize();
         blackBox.printbox();
 

@@ -11,12 +11,13 @@ import java.util.Scanner;
 public class BlackBox {
     public static char box[][]; // The matrix for the game.
     public static int size;       // to store the number of rows and columns.
-    public static int numball;
-    public static int numlink;
-    public static boolean end;
-    public static int score;
+    public static int numball = 3;
+    public static int numlink = 1;
+    public static boolean end = false;
+    public static int score = 0;
     public static int high_score=-1;
-    public static ArrayList<int[]> guess = new ArrayList<int[]>();
+    public ArrayList<int[]> guess = new ArrayList<int[]>();
+    static Scanner sc;
 
     /**
      * The default constructor which places default values to the class variables
@@ -51,14 +52,31 @@ public class BlackBox {
         //Todo: end the game if the user says quit.
         //Todo:call the functions initialize and playgame()
         // Todo: take care of high score
-        Scanner sc = new Scanner(System.in);
-        System.out.println("Welcome to the BlackBox Game! Please enter the difficulty level: (quit to exit)");
-        String level = sc.nextLine();
-        int size = difficultySetter(level);
-        BlackBox blackBox = new BlackBox(size, 3, 0, false, 0);
-        blackBox.initialize();
-        blackBox.printbox();
-        playgame();
+        sc = new Scanner(System.in);
+        boolean isContinue = true;
+        while (isContinue) {
+            System.out.println("Welcome to the BlackBox Game! Please enter the difficulty level: (quit to exit)");
+            String level = sc.nextLine();
+            if (level.equalsIgnoreCase("quit")){
+                break;
+            }
+            int size = difficultySetter(level);
+            BlackBox blackBox = new BlackBox(size, 3, 1, false, 0);
+            blackBox.initialize();
+            blackBox.printbox();
+            blackBox.playgame();
+            if (blackBox.getend()){
+                break;
+            }
+        }
+
+        if (high_score != -1){
+            System.out.println("Highest score =>" + Integer.toString(high_score));
+        }
+        else {
+            System.out.println("Highest score =>None");
+            System.out.println("Better luck next time!");
+        }
 
 
     }
@@ -117,7 +135,7 @@ public class BlackBox {
     /**
      * The printbox funtion prints out the matrix in a particular format as given in the handout.
      */
-    public static void printbox() {
+    public void printbox() {
         //Todo:print the box in the correct order
         // for  5*5 example
         /* 1  2  3  4  5  6  7
@@ -167,13 +185,12 @@ public class BlackBox {
     /**
      * The playgame funtion opens the first cell and is the main controller for the game. It calls various function when needed.
      */
-    public static void playgame() {
+    public void playgame() {
         //Todo:Take input of a guess or hint from the user.
         //Todo:Check for valid input
         //Todo:call required functions
         //Todo:keep tab on score.
         System.out.println("Choose the new coordinates (row, column) to play the next step or say submit/quit to end the game: ");
-        Scanner sc = new Scanner(System.in);
         boolean isContinue = true;
         while (isContinue){
             String input = sc.nextLine();
@@ -181,29 +198,55 @@ public class BlackBox {
             if (mode == -1){
                 System.out.println("Please make sure your input is valid.");
                 System.out.println("Choose the new coordinates (row, column) to play the next step or say submit/quit to end the game: ");
+                printbox();
                 continue;
             }
             else if (mode == -2){
                 System.out.println("Please make sure your input is valid (POINT AT THE CORNER IS INVALID).");
                 System.out.println("Choose the new coordinates (row, column) to play the next step or say submit/quit to end the game: ");
+                printbox();
                 continue;
             }
             else if (mode == 0){
                 isContinue = false;
+                end = true;
+                break;
             }
             else if (mode == 1){
-                System.out.print("Your score is ");
+                boolean isSuccess = true;
+                if (guess.size() != 3){
+                    System.out.println("Please place all your guess-balls!");
+                    printbox();
+                    continue;
+                }
                 for (int[] xy:guess){
                     int i = xy[0];
                     int j = xy[1];
                     if (box[i][j] != '0'){
                         score--;
+                        isSuccess = false;
                     }
                 }
-                System.out.print(score);
-                System.out.print("\n");
-                printbox(2);
-                System.out.println("Welcome to the BlackBox Game! Please enter the difficulty level: (quit to exit)");
+                if (isSuccess) {
+                    System.out.print("Thank you for playing the game! ");
+                    System.out.print("Your score is ");
+                    System.out.print(score);
+                    System.out.print("\n");
+                    printbox(2);
+                    isContinue = false;
+                    if (score != 0) {
+                        if (score < high_score) {
+                            high_score = score;
+                        }
+                    }
+                }
+                else{
+                    System.out.println("Fail");
+                    printbox(2);
+                    isContinue = false;
+                }
+                break;
+
             }
             else if (mode == 2){
                 int x = Integer.parseInt(""+input.charAt(0));
@@ -215,8 +258,9 @@ public class BlackBox {
                 int y = Integer.parseInt(""+input.charAt(2));
                 boolean isValid = guess(x, y);
                 if (!isValid){
-                    System.out.println("You can only guess for three points!");
+                    System.out.println("You cannot place any other guess balls");
                     System.out.println("Choose the new coordinates (row, column) to play the next step or say submit/quit to end the game: ");
+                    printbox();
                 }
             }
             else{
@@ -224,7 +268,7 @@ public class BlackBox {
             }
         }
     }
-    public static void printbox(int a){
+    public void printbox(int a){
         System.out.print(" ");
         for (int i=0;i<size;i++){
             System.out.print(i+1);
@@ -239,7 +283,13 @@ public class BlackBox {
         for (int i=0;i<size;i++){
             System.out.print(Integer.toString(i+1)+"|");
             for (int j=0;j<size;j++){
-                char c = box[i][j];
+                char c = ' ';
+                    c = box[i][j];
+                for (int[] point:guess){
+                    if (point[0] == i && point[1] == j){
+                        c = '*';
+                    }
+                }
                 System.out.print(c + " |");
             }
             System.out.print("\n");
@@ -250,7 +300,7 @@ public class BlackBox {
         }
         System.out.print("\n");
     }
-    private static boolean guess(int x, int y) {
+    private boolean guess(int x, int y) {
         if (guess.size() == 3){
             return false;
         }
@@ -263,7 +313,7 @@ public class BlackBox {
      * The check funtion takes in the row and column in the matrix, checks for Hit (H), Reflection (R) or Divergence(#num)
      *
      */
-    public static void check(int i,int j) {
+    public void check(int i,int j) {
         //Todo:place a guess when the input of i and j are valid
         //Todo:Check for a Hit
         //Todo:Check for a reflection
@@ -277,10 +327,24 @@ public class BlackBox {
                 box[i][j] = 'R';
                 printbox();
             } else if (deflectionCheck(i, j)) {
-                box[i][j] = 'D';
+                box[i][j] = (char)('1'+numlink-1);
+                numlink++;
                 printbox();
             } else if (straightRay(i, j)) {
-                box[i][j] = '1';
+                box[i][j] = (char)('1'+numlink-1);
+                if (i == 0){
+                    box[size-1][j] =( char)('1'+numlink-1);
+                }
+                else if (j == 0){
+                    box[i][size-1] =( char)('1'+numlink-1);
+                }
+                else if (i == size-1){
+                    box[0][j] =( char)('1'+numlink-1);
+                }
+                else{
+                    box[i][0] =( char)('1'+numlink-1);
+                }
+                numlink++;
                 printbox();
 
             } else {
@@ -326,14 +390,20 @@ public class BlackBox {
      *
      */
     public static boolean reflectionCheck(int i, int j) {
-        if (i<0 || j<0){
+        if (i<0 || j<0 || j>size-1 || i>size-1){
             return false;}
         if (isEdge(i)){
             if (i == 0){
+                if (j+1 > size-1 || j-1 < 0){
+                    return false;
+                }
                 if (box[1][j+1] == '0' || box[1][j-1] == '0'){
                     return true;
                 }
                 else{
+                    if (j+1 > size-1 || j-1 < 0){
+                        return false;
+                    }
                     for (int n=1;n<size-1;n++){
                         if (box[n][j-1] == '0' && box[n][j+1] == '0'){
                             return true;
@@ -342,10 +412,16 @@ public class BlackBox {
                 }
             }
             if (i == size-1){
+                if (j+1 > size-1 || j-1 < 0){
+                    return false;
+                }
                 if (box[size-2][j+1] == '0' || box[size-2][j-1] == '0'){
                     return true;
                 }
                 else{
+                    if (j+1 > size-1 || j-1 < 0){
+                        return false;
+                    }
                     for (int n=1;n<size-1;n++){
                         if (box[n][j-1] == '0' && box[n][j+1] == '0'){
                             return true;
@@ -356,10 +432,16 @@ public class BlackBox {
         }
         if (isEdge(j)){
             if (j == 0){
+                if (i+1 > size-1 || i-1 < 0){
+                    return false;
+                }
                 if (box[i+1][1] == '0' || box[i-1][1] == '0'){
                     return true;
                 }
                 else{
+                    if (i+1 > size-1 || i-1 < 0){
+                        return false;
+                    }
                     for (int n=1;n<size-1;n++){
                         if (box[i+1][n] == '0' && box[i-1][n] == '0'){
                             return true;
@@ -368,10 +450,16 @@ public class BlackBox {
                 }
             }
             if (j == size-1){
+                if (i+1 > size-1 || i-1 < 0){
+                    return false;
+                }
                 if (box[i-1][size-2] == '0' || box[i+1][size-2] == '0'){
                     return true;
                 }
                 else{
+                    if (i+1 > size-1 || i-1 < 0){
+                        return false;
+                    }
                     for (int n=1;n<size-1;n++){
                         if (box[i-1][n] == '0' && box[i+1][n] == '0'){
                             return true;
@@ -387,19 +475,58 @@ public class BlackBox {
      *
      */
     public static boolean deflectionCheck(int i, int j) {
-        if (i<0 || j<0){
+        int ballX = -1;
+        int ballY = -1;
+        boolean flag = false;
+        if (i<0 || j<0 || j>size-1 || i>size-1){
             return false;}
         if (isEdge(i)){
+            if (j+1 > size-1 || j-1 < 0){
+                return false;
+            }
             for (int n=1;n<size-1;n++){
-                if (box[n][j-1] == '0' || box[n][j+1] == '0'){
+                if (box[n][j-1] == '0'){
+                    if (i == 0) {
+                        box[n-1][size - 1] = (char) ('1' + numlink - 1);
+                    }
+                    else{
+                        box[n+1][size-1] = (char) ('1' + numlink - 1);
+                    }
+                    return true;
+                }
+                if (box[n][j+1] == '0'){
+                    if (i == 0) {
+                        box[n-1][0] = (char) ('1' + numlink - 1);
+                    }
+                    else{
+                        box[n+1][0] = (char) ('1' + numlink - 1);
+                    }
                     return true;
                 }
 
             }
         }
         if (isEdge(j)){
+            if (i+1 > size-1 || i-1 < 0){
+                return false;
+            }
             for (int n=1;n<size-1;n++){
-                if (box[i-1][n] == '0' && box[i+1][n] == '0'){
+                if (box[i-1][n] == '0'){
+                    if (j == 0) {
+                        box[size-1][n-1] = (char) ('1' + numlink - 1);
+                    }
+                    else{
+                        box[size-1][n+1] = (char) ('1' + numlink - 1);
+                    }
+                    return true;
+                }
+                if (box[i+1][n] == '0'){
+                    if (j == '0') {
+                        box[0][n-1] = (char) ('1' + numlink - 1);
+                    }
+                    else{
+                        box[0][n+1] = (char) ('1' + numlink - 1);
+                    }
                     return true;
                 }
             }

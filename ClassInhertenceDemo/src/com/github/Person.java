@@ -27,4 +27,8 @@ public class Person {
     public void setAddress(String address) {
         this.address = address;
     }
+
+    public int returnAmount(int num){
+        return num;
+    }
 }

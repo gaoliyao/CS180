@@ -54,6 +54,7 @@ public class BlackBox {
         // Todo: take care of high score
         sc = new Scanner(System.in);
         boolean isContinue = true;
+        int highscore = 1000;
         while (isContinue) {
             System.out.println("Welcome to the BlackBox Game! Please enter the difficulty level: (quit to exit)");
             String level = sc.nextLine();
@@ -68,10 +69,13 @@ public class BlackBox {
             if (blackBox.getend()){
                 break;
             }
+            if (blackBox.getscore() != -1 && blackBox.getscore() < highscore){
+                highscore = blackBox.getscore();
+            }
         }
 
-        if (high_score != -1){
-            System.out.println("Highest score =>" + Integer.toString(high_score));
+        if (highscore != 1000){
+            System.out.println("Highest score =>" + Integer.toString(highscore));
         }
         else {
             System.out.println("Highest score =>None");
@@ -234,13 +238,13 @@ public class BlackBox {
                     System.out.print("\n");
                     printbox(2);
                     isContinue = false;
-                    if (score != 0) {
-                        if (score < high_score) {
-                            high_score = score;
-                        }
+                    if (score < high_score) {
+                        high_score = score;
                     }
+
                 }
                 else{
+                    score = -1;
                     System.out.println("Fail");
                     printbox(2);
                     isContinue = false;

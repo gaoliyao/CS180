@@ -133,13 +133,6 @@ public class Course {
         if (teacher == null || teacherCount == MAX_STUDENTS){
             throw new AddToCourseException();
         }
-//        for (Teacher t: this.teachers){
-//            if (t != null) {
-//                if (t == teacher) {
-//                    throw new AddToCourseException();
-//                }
-//            }
-//        }
         for (int i=0;i<this.teachers.length;i++){
             if (this.teachers[i] == null){
                 this.teachers[i] = teacher;
@@ -148,6 +141,16 @@ public class Course {
         }
         //this.teachers[this.teachers.length] = teacher;
         teacher.addCourse(this);
+
+
+
+//        for (Teacher t: this.teachers){
+//            if (t != null) {
+//                if (t == teacher) {
+//                    throw new AddToCourseException();
+//                }
+//            }
+//        }
     }
 
     /**
@@ -159,6 +162,15 @@ public class Course {
      */
     public void dropTeacher(Teacher teacher)throws DropFromCourseException{
         //TODO: Remove teacher from Course, if possible, and remove Course from teacher's array of Courses.
+//        System.out.println("======");
+//        for (Teacher t: this.teachers){
+//            if (t != null) {
+//                System.out.println(t.getName());
+//            }
+//            else{
+//                System.out.println("null");
+//            }
+//        }
         if (teacher == null){
             throw new DropFromCourseException();
         }
@@ -207,6 +219,7 @@ public class Course {
             }
             count++;
         }
+        //System.out.println(count);
         Student[] studentArray = new Student[count];
         for (int i=0;i<count;i++){
             studentArray[i] = this.students[i];

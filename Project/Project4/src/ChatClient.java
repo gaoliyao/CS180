@@ -1,7 +1,8 @@
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.Socket;
+import java.net. Socket;
+import java.util.Scanner;
 
 final class ChatClient {
     private ObjectInputStream sInput;
@@ -94,13 +95,45 @@ final class ChatClient {
      */
     public static void main(String[] args) {
         // Get proper arguments and override defaults
-
+        Scanner sc = new Scanner(System.in);
+        String command = sc.nextLine();
+        String[] commandSplitBySpace = command.split(" ");
+        String username = "";
+        String server = "localhost";
+        int port = 1500;
+        if (commandSplitBySpace.length == 3){
+            username = commandSplitBySpace[2];
+        }
+        if (commandSplitBySpace.length == 4){
+            username = commandSplitBySpace[2];
+            port = Integer.parseInt(commandSplitBySpace[3]);
+        }
+        if (commandSplitBySpace.length == 5){
+            username = commandSplitBySpace[2];
+            port = Integer.parseInt(commandSplitBySpace[3]);
+            server = commandSplitBySpace[4];
+        }
         // Create your client and start it
-        ChatClient client = new ChatClient("localhost", 1500, "CS 180 Student");
+        ChatClient client = new ChatClient(server, port, username);
         client.start();
 
         // Send an empty message to the server
-        client.sendMessage(new ChatMessage());
+        try {
+            while (true) {
+            String mes = sc.nextLine();
+            if (mes.equalsIgnoreCase("/logout")){
+                    client.sInput.close();
+                    client.sOutput.close();
+                    client.socket.close();
+                }
+                else {
+                client.sendMessage(new ChatMessage(0, "", ""));
+            }
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -112,8 +145,10 @@ final class ChatClient {
     private final class ListenFromServer implements Runnable {
         public void run() {
             try {
-                String msg = (String) sInput.readObject();
-                System.out.print(msg);
+                while (true) {
+                    String msg = (String) sInput.readObject();
+                    System.out.print(msg);
+                }
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
             }

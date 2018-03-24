@@ -5,6 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 final class ChatServer {
     private static int uniqueId = 0;
@@ -27,11 +28,14 @@ final class ChatServer {
     private void start() {
         try {
             ServerSocket serverSocket = new ServerSocket(port);
-            Socket socket = serverSocket.accept();
-            Runnable r = new ClientThread(socket, uniqueId++);
-            Thread t = new Thread(r);
-            clients.add((ClientThread) r);
-            t.start();
+            while (true) {
+                Socket socket = serverSocket.accept();
+                Runnable r = new ClientThread(socket, uniqueId++);
+                Thread t = new Thread(r);
+                clients.add((ClientThread) r);
+                t.start();
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -63,8 +67,17 @@ final class ChatServer {
      *  If the port number is not specified 1500 is used
      */
     public static void main(String[] args) {
-        ChatServer server = new ChatServer(1500);
-        server.start();
+        Scanner sc = new Scanner(System.in);
+        String command = sc.nextLine();
+        String[] commandSplitBySpace = command.split(" ");
+        if (commandSplitBySpace.length == 2) {
+            ChatServer server = new ChatServer(1500);
+            server.start();
+        }
+        if (commandSplitBySpace.length == 3) {
+            ChatServer server = new ChatServer(Integer.parseInt(commandSplitBySpace[2]));
+            server.start();
+        }
     }
 
 

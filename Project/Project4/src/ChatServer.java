@@ -1,9 +1,13 @@
+import com.sun.deploy.util.SessionState;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
@@ -12,6 +16,8 @@ final class ChatServer {
     // Data structure to hold all of the connected clients
     private final List<ClientThread> clients = new ArrayList<>();
     private final int port;			// port the server is hosted on
+    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+    static Object obj = new Object();
 
     /**
      * ChatServer constructor
@@ -41,6 +47,36 @@ final class ChatServer {
         }
     }
 
+    private synchronized void broadcast(String message){
+        synchronized (obj) {
+            String time = sdf.format(new Date());
+            String formattedMessage = time + " " + message + "\n";
+            System.out.print(formattedMessage);
+
+            for (ClientThread clientThread : clients) {
+                clientThread.writeMessage(formattedMessage);
+            }
+            System.out.println("Broadcasting...");
+        }
+    }
+
+
+    private synchronized void remove(int id){
+        clients.remove(id);
+    }
+
+    private void close(){
+        try {
+            for (ClientThread c: clients) {
+                c.sInput.close();
+                c.sOutput.close();
+                c.socket.close();
+            }
+            } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      *	Sample code to use as a reference for Tic Tac Toe
      *
@@ -48,17 +84,17 @@ final class ChatServer {
      * @param message - the string to be sent
      * @param username - the user the message will be sent to
      */
-    /*private synchronized void directMessage(String message, String username) {
+    private synchronized void directMessage(String message, String username) {
         String time = sdf.format(new Date());
         String formattedMessage = time + " " + message + "\n";
         System.out.print(formattedMessage);
 
         for (ClientThread clientThread : clients) {
             if (clientThread.username.equalsIgnoreCase(username)) {
-                clientThread.writeMsg(formattedMessage);
+                clientThread.writeMessage(formattedMessage);
             }
         }
-    }*/
+    }
 
 
     /*
@@ -67,15 +103,14 @@ final class ChatServer {
      *  If the port number is not specified 1500 is used
      */
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        String command = sc.nextLine();
-        String[] commandSplitBySpace = command.split(" ");
-        if (commandSplitBySpace.length == 2) {
+//        Scanner sc = new Scanner(System.in);
+//        String command = sc.nextLine();
+        if (args.length == 0){
             ChatServer server = new ChatServer(1500);
             server.start();
         }
-        if (commandSplitBySpace.length == 3) {
-            ChatServer server = new ChatServer(Integer.parseInt(commandSplitBySpace[2]));
+        if (args.length == 1) {
+            ChatServer server = new ChatServer(Integer.parseInt(args[0]));
             server.start();
         }
     }
@@ -115,20 +150,61 @@ final class ChatServer {
         @Override
         public void run() {
             // Read the username sent to you by client
-            try {
-                cm = (ChatMessage) sInput.readObject();
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
+            while (true) {
+                try {
+                    cm = (ChatMessage) sInput.readObject();
+                    if (cm == null){
+                        continue;
+                    }
+                    System.out.println(cm.getType());
+                    System.out.println(cm.getMessage());
+                    System.out.println(cm.getRecepient());
+                } catch (IOException | ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+
+                if (cm.getType() == ChatMessage.MESSAGE) {
+                    broadcast(cm.getMessage());
+                } else if (cm.getType() == ChatMessage.LOGOUT) {
+                    broadcast("LOGOUT " + username + ": " + cm.getMessage());
+                } else if (cm.getType() == ChatMessage.DM) {
+                    directMessage(cm.getMessage(), cm.getRecepient());
+//                for (ClientThread c: clients){
+//                    if (c.username.equalsIgnoreCase(cm.getRecepient())){
+//                        c.writeMessage(cm.getMessage());
+//                    }
+//                }
+                } else if (cm.getType() == ChatMessage.LIST) {
+                    String output = "";
+                    for (ClientThread c : clients) {
+                        output += c.username + " ";
+                    }
+                    for (ClientThread c : clients) {
+                        if (c.username.equalsIgnoreCase(username)) {
+                            c.writeMessage(output);
+                        }
+                    }
+                } else if (cm.getType() == ChatMessage.TICTACTOE) {
+
+                }
+
+
+                // Send message back to the client
+//            try {
+//                sOutput.writeObject("Pong");
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+                //broadcast(username + ": " + cm.getMessage());
             }
-            System.out.println(username + ": Ping");
-
-
-            // Send message back to the client
+        }
+        private synchronized boolean writeMessage(String msg){
             try {
-                sOutput.writeObject("Pong");
+                sOutput.writeObject(msg);
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            return true;
         }
     }
 }

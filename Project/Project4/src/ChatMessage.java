@@ -17,25 +17,6 @@ final class ChatMessage implements Serializable {
         this.recepient = recipient;
     }
 
-    private void broadcast(String message){
-
-    }
-
-    private boolean writeMessage(String msg){
-        return false;
-    }
-
-    private void remove(int id){
-
-    }
-
-    public void run(){
-
-    }
-
-    private void close(){
-
-    }
 
     public int getType() {
         return type;

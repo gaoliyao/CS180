@@ -52,15 +52,25 @@ public final class ComplexNumber extends Object implements Comparable<ComplexNum
         this.realPart = 0;
     }
 
-    public synchronized ComplexNumber add(ComplexNumber aComplexNumber) throws IllegalArgumentException {
-        synchronized (list) {
 
+
+
+    
+
+    public synchronized ComplexNumber add(ComplexNumber aComplexNumber) throws IllegalArgumentException {
             if (aComplexNumber == null) {
                 throw new IllegalArgumentException();
             }
             return new ComplexNumber(this.realPart + aComplexNumber.getRealPart(), this.imaginaryPart + aComplexNumber.getImaginaryPart());
-        }
     }
+
+
+
+
+
+
+
+
     public synchronized ComplexNumber conjugate(){
         synchronized (list) {
             return new ComplexNumber(this.realPart, -this.imaginaryPart);

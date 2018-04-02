@@ -61,6 +61,7 @@ final class ChatClient {
         // After starting, send the clients username to the server.
         try {
             sOutput.writeObject(username);
+            sOutput.reset();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -75,7 +76,9 @@ final class ChatClient {
      */
     private void sendMessage(ChatMessage msg) {
         try {
+            System.out.println(msg.getMessage());
             sOutput.writeObject(msg);
+            sOutput.reset();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -96,44 +99,67 @@ final class ChatClient {
     public static void main(String[] args) {
         // Get proper arguments and override defaults
         Scanner sc = new Scanner(System.in);
-        String command = sc.nextLine();
-        String[] commandSplitBySpace = command.split(" ");
         String username = "";
         String server = "localhost";
         int port = 1500;
-        if (commandSplitBySpace.length == 3){
-            username = commandSplitBySpace[2];
+//        if (commandSplitBySpace.length == 3){
+//            username = commandSplitBySpace[2];
+//        }
+//        if (commandSplitBySpace.length == 4){
+//            username = commandSplitBySpace[2];
+//            port = Integer.parseInt(commandSplitBySpace[3]);
+//        }
+//        if (commandSplitBySpace.length == 5){
+//            username = commandSplitBySpace[2];
+//            port = Integer.parseInt(commandSplitBySpace[3]);
+//            server = commandSplitBySpace[4];
+//        }
+        if (args.length == 1){
+            username = args[0];
         }
-        if (commandSplitBySpace.length == 4){
-            username = commandSplitBySpace[2];
-            port = Integer.parseInt(commandSplitBySpace[3]);
+        if (args.length == 2){
+            username = args[0];
+            port = Integer.parseInt(args[1]);
         }
-        if (commandSplitBySpace.length == 5){
-            username = commandSplitBySpace[2];
-            port = Integer.parseInt(commandSplitBySpace[3]);
-            server = commandSplitBySpace[4];
+        if (args.length == 3){
+            username = args[0];
+            port = Integer.parseInt(args[1]);
+            server = args[2];
         }
         // Create your client and start it
         ChatClient client = new ChatClient(server, port, username);
         client.start();
+        client.sendMessage(new ChatMessage(ChatMessage.MESSAGE, username + "enters the room", ""));
 
         // Send an empty message to the server
-        try {
+//        try {
             while (true) {
             String mes = sc.nextLine();
             if (mes.equalsIgnoreCase("/logout")){
-                    client.sInput.close();
-                    client.sOutput.close();
-                    client.socket.close();
+                    client.sendMessage(new ChatMessage(ChatMessage.LOGOUT, "", ""));
+//                    client.sInput.close();
+//                    client.sOutput.close();
+//                    client.socket.close();
                 }
+                else if (mes.equalsIgnoreCase("/lists")){
+                client.sendMessage(new ChatMessage(ChatMessage.LIST, username + " left", ""));
+            }
+            else if (mes.contains("/msg")){
+                    String[] word = mes.split(" ");
+                    client.sendMessage(new ChatMessage(ChatMessage.DM, word[2], word[1]));
+            }
+            else if (mes.contains("/ttt")){
+                String[] word = mes.split(" ");
+                client.sendMessage(new ChatMessage(ChatMessage.TICTACTOE, word[2], word[1]));
+            }
                 else {
-                client.sendMessage(new ChatMessage(0, "", ""));
+                client.sendMessage(new ChatMessage(ChatMessage.MESSAGE, mes, ""));
             }
             }
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+//        }
+//        catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
 

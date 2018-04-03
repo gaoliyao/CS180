@@ -1,4 +1,5 @@
 import com.sun.deploy.util.SessionState;
+import com.sun.tools.example.debug.tty.TTY;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -18,6 +19,7 @@ final class ChatServer {
     private final int port;			// port the server is hosted on
     SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
     static Object obj = new Object();
+    private final List<TicTacToeGame> ticTacToeGames = new ArrayList<>();
 
     /**
      * ChatServer constructor
@@ -47,10 +49,10 @@ final class ChatServer {
         }
     }
 
-    private synchronized void broadcast(String message){
+    private synchronized void broadcast(String message, String username){
         synchronized (obj) {
             String time = sdf.format(new Date());
-            String formattedMessage = time + " " + message + "\n";
+            String formattedMessage = time + " " + username + " " + message + "\n";
             System.out.print(formattedMessage);
 
             for (ClientThread clientThread : clients) {
@@ -84,9 +86,9 @@ final class ChatServer {
      * @param message - the string to be sent
      * @param username - the user the message will be sent to
      */
-    private synchronized void directMessage(String message, String username) {
+    private synchronized void directMessage(String message, String username, String sentUser) {
         String time = sdf.format(new Date());
-        String formattedMessage = time + " " + message + "\n";
+        String formattedMessage = time +  " " + sentUser + " => " + username + " " + message + "\n";
         System.out.print(formattedMessage);
 
         for (ClientThread clientThread : clients) {
@@ -164,11 +166,20 @@ final class ChatServer {
                 }
 
                 if (cm.getType() == ChatMessage.MESSAGE) {
-                    broadcast(cm.getMessage());
+                    broadcast(cm.getMessage(), username);
                 } else if (cm.getType() == ChatMessage.LOGOUT) {
-                    broadcast("LOGOUT " + username + ": " + cm.getMessage());
+                    broadcast("LOGOUT " + username + ": " + cm.getMessage(), username);
+                    try {
+                        sInput.close();
+                        sOutput.close();
+                        socket.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                    //break;
                 } else if (cm.getType() == ChatMessage.DM) {
-                    directMessage(cm.getMessage(), cm.getRecepient());
+                    directMessage(cm.getMessage(), cm.getRecepient(), username);
 //                for (ClientThread c: clients){
 //                    if (c.username.equalsIgnoreCase(cm.getRecepient())){
 //                        c.writeMessage(cm.getMessage());
@@ -181,11 +192,53 @@ final class ChatServer {
                     }
                     for (ClientThread c : clients) {
                         if (c.username.equalsIgnoreCase(username)) {
-                            c.writeMessage(output);
+                            c.writeMessage(output+"\n");
                         }
                     }
                 } else if (cm.getType() == ChatMessage.TICTACTOE) {
-
+                    boolean isInGame = false;
+                    boolean isFinish = false;
+                    TicTacToeGame curTTT = null;
+                    for (TicTacToeGame t: ticTacToeGames){
+                        if (t.isUserInGame(username) && t.isUserInGame(cm.getRecepient())){
+                            isInGame = true;
+                            boolean isValidTurn = t.takeTurn(username, Integer.parseInt(cm.getMessage()));
+                            if (isValidTurn){
+                                directMessage("\n"+t.toString(), username, "System");
+                                directMessage("\n"+t.toString(), cm.getRecepient(), username);
+                            }
+                            else{
+                                directMessage("Invalid operation!", username, "System");
+                            }
+                            if (t.isFinish()){
+                                directMessage(t.winner + "won!", username, "System");
+                                directMessage(t.winner + "won!", cm.getRecepient(), "System");
+                                isFinish = true;
+                                curTTT = t;
+                            }
+                        }
+                    }
+                    if (isFinish) {
+                        ticTacToeGames.remove(curTTT);
+                    }
+                    if (!isInGame){
+                        curTTT = new TicTacToeGame(username, cm.getRecepient());
+                        directMessage( "Game Start!", username, "System");
+                        directMessage( "\n"+curTTT.toString(), username,  "System");
+                        directMessage( "Game Start!", cm.getRecepient(),  username);
+                        directMessage( "\n"+curTTT.toString(), cm.getRecepient(),  username);
+                        if (!cm.getMessage().isEmpty()){
+                            boolean isValidTurn = curTTT.takeTurn(username, Integer.parseInt(cm.getMessage()));
+                            if (isValidTurn){
+                                directMessage("\n"+curTTT.toString(), username, "System");
+                                directMessage("\n"+curTTT.toString(), cm.getRecepient(), username);
+                            }
+                            else{
+                                directMessage("Invalid operation!", username, "System");
+                            }
+                        }
+                        ticTacToeGames.add(curTTT);
+                    }
                 }
 
 
@@ -203,6 +256,7 @@ final class ChatServer {
                 sOutput.writeObject(msg);
             } catch (IOException e) {
                 e.printStackTrace();
+                return false;
             }
             return true;
         }

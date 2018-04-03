@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net. Socket;
+import java.net.SocketException;
 import java.util.Scanner;
 
 final class ChatClient {
@@ -12,6 +13,8 @@ final class ChatClient {
     private final String server;
     private final String username;
     private final int port;
+
+    private TicTacToeGame ticTacToeGame = null;
 
     /* ChatClient constructor
      * @param server - the ip address of the server as a string
@@ -76,7 +79,7 @@ final class ChatClient {
      */
     private void sendMessage(ChatMessage msg) {
         try {
-            System.out.println(msg.getMessage());
+            //System.out.println(msg.getMessage());
             sOutput.writeObject(msg);
             sOutput.reset();
         } catch (IOException e) {
@@ -132,34 +135,59 @@ final class ChatClient {
         client.sendMessage(new ChatMessage(ChatMessage.MESSAGE, username + "enters the room", ""));
 
         // Send an empty message to the server
-//        try {
+        try {
             while (true) {
             String mes = sc.nextLine();
             if (mes.equalsIgnoreCase("/logout")){
                     client.sendMessage(new ChatMessage(ChatMessage.LOGOUT, "", ""));
-//                    client.sInput.close();
-//                    client.sOutput.close();
-//                    client.socket.close();
+                    client.sInput.close();
+                    client.sOutput.close();
+                    client.socket.close();
+                    break;
                 }
                 else if (mes.equalsIgnoreCase("/lists")){
                 client.sendMessage(new ChatMessage(ChatMessage.LIST, username + " left", ""));
             }
             else if (mes.contains("/msg")){
                     String[] word = mes.split(" ");
-                    client.sendMessage(new ChatMessage(ChatMessage.DM, word[2], word[1]));
+                    String message = "";
+                    for (int i = 2; i < word.length; i++) {
+                        message += word[i] + " ";
+                    }
+                    client.sendMessage(new ChatMessage(ChatMessage.DM, message, word[1]));
             }
             else if (mes.contains("/ttt")){
                 String[] word = mes.split(" ");
-                client.sendMessage(new ChatMessage(ChatMessage.TICTACTOE, word[2], word[1]));
+//                if (client.ticTacToeGame == null) {
+//                    client.ticTacToeGame = new TicTacToeGame(username, word[1]);
+//                }
+                if (word.length == 3) {
+//                    client.ticTacToeGame.takeTurn(username, Integer.parseInt(word[1]));
+//                    System.out.println(client.ticTacToeGame.toString());
+                    client.sendMessage(new ChatMessage(ChatMessage.TICTACTOE, word[2], word[1]));
+//                    if (client.ticTacToeGame.isWon()){
+//                        System.out.println(client.ticTacToeGame.winner + "won the game.");
+//                        client.ticTacToeGame = null;
+//                    }
+                }
+                if (word.length == 2) {
+                    client.sendMessage(new ChatMessage(ChatMessage.TICTACTOE, "", word[1]));
+//                    if (client.ticTacToeGame == null) {
+//                        client.ticTacToeGame = new TicTacToeGame(username, word[1]);
+//                    }
+//                    else {
+//                        System.out.println(client.ticTacToeGame.toString());
+//                    }
+                }
             }
                 else {
                 client.sendMessage(new ChatMessage(ChatMessage.MESSAGE, mes, ""));
             }
             }
-//        }
-//        catch (IOException e) {
-//            e.printStackTrace();
-//        }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -176,7 +204,7 @@ final class ChatClient {
                     System.out.print(msg);
                 }
             } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
+                return ;
             }
         }
     }

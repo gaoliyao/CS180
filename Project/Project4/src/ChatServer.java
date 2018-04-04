@@ -40,8 +40,21 @@ final class ChatServer {
                 Socket socket = serverSocket.accept();
                 Runnable r = new ClientThread(socket, uniqueId++);
                 Thread t = new Thread(r);
-                clients.add((ClientThread) r);
-                t.start();
+                boolean isRepeated = false;
+                for (ClientThread c: clients){
+                    if (((ClientThread) r).username.equalsIgnoreCase(c.username)){
+                        isRepeated = true;
+                        break;
+                    }
+                }
+                if (!isRepeated) {
+                    clients.add((ClientThread) r);
+                    t.start();
+                }
+                else{
+                    ((ClientThread) r).writeMessage("The username already exists! The server will close the connection. ");
+                    break;
+                }
             }
 
         } catch (IOException e) {
@@ -52,13 +65,13 @@ final class ChatServer {
     private synchronized void broadcast(String message, String username){
         synchronized (obj) {
             String time = sdf.format(new Date());
-            String formattedMessage = time + " " + username + " " + message + "\n";
+            String formattedMessage = time + " " + username + ": " + message + "\n";
             System.out.print(formattedMessage);
 
             for (ClientThread clientThread : clients) {
                 clientThread.writeMessage(formattedMessage);
             }
-            System.out.println("Broadcasting...");
+            //System.out.println("Broadcasting...");
         }
     }
 
@@ -88,7 +101,7 @@ final class ChatServer {
      */
     private synchronized void directMessage(String message, String username, String sentUser) {
         String time = sdf.format(new Date());
-        String formattedMessage = time +  " " + sentUser + " => " + username + " " + message + "\n";
+        String formattedMessage = time +  " " + sentUser + " => " + username + ": " + message + "\n";
         System.out.print(formattedMessage);
 
         for (ClientThread clientThread : clients) {
@@ -109,10 +122,12 @@ final class ChatServer {
 //        String command = sc.nextLine();
         if (args.length == 0){
             ChatServer server = new ChatServer(1500);
+            System.out.println("Server waiting for clients on port 1500");
             server.start();
         }
         if (args.length == 1) {
             ChatServer server = new ChatServer(Integer.parseInt(args[0]));
+            System.out.println("Server waiting for clients on port " + args[0]);
             server.start();
         }
     }
@@ -146,6 +161,10 @@ final class ChatServer {
             }
         }
 
+        public String getUsername(){
+            return username;
+        }
+
         /*
          * This is what the client thread actually runs.
          */
@@ -158,9 +177,6 @@ final class ChatServer {
                     if (cm == null){
                         continue;
                     }
-                    System.out.println(cm.getType());
-                    System.out.println(cm.getMessage());
-                    System.out.println(cm.getRecepient());
                 } catch (IOException | ClassNotFoundException e) {
                     e.printStackTrace();
                 }
@@ -176,17 +192,19 @@ final class ChatServer {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                    clients.remove(this);
                     break;
                     //break;
                 } else if (cm.getType() == ChatMessage.DM) {
                     directMessage(cm.getMessage(), cm.getRecepient(), username);
+                    directMessage(cm.getMessage(), username, username);
 //                for (ClientThread c: clients){
 //                    if (c.username.equalsIgnoreCase(cm.getRecepient())){
 //                        c.writeMessage(cm.getMessage());
 //                    }
 //                }
                 } else if (cm.getType() == ChatMessage.LIST) {
-                    String output = "";
+                    String output = "List of users connected right now: ";
                     for (ClientThread c : clients) {
                         output += c.username + " ";
                     }

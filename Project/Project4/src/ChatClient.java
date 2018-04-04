@@ -36,7 +36,7 @@ final class ChatClient {
         try {
             socket = new Socket(server, port);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Error connected to server");
             return false;
         }
 
@@ -80,10 +80,13 @@ final class ChatClient {
     private void sendMessage(ChatMessage msg) {
         try {
             //System.out.println(msg.getMessage());
+            if (sOutput == null){
+                return;
+            }
             sOutput.writeObject(msg);
             sOutput.reset();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Error connected to server");
         }
     }
 
@@ -132,17 +135,23 @@ final class ChatClient {
         // Create your client and start it
         ChatClient client = new ChatClient(server, port, username);
         client.start();
-        client.sendMessage(new ChatMessage(ChatMessage.MESSAGE, username + "enters the room", ""));
+        System.out.println("Connection accepted " + server + ":" + port);
+        client.sendMessage(new ChatMessage(ChatMessage.MESSAGE,  "just connected", "System"));
 
         // Send an empty message to the server
         try {
             while (true) {
+                System.out.print("> ");
             String mes = sc.nextLine();
             if (mes.equalsIgnoreCase("/logout")){
                     client.sendMessage(new ChatMessage(ChatMessage.LOGOUT, "", ""));
                     client.sInput.close();
+                    client.sInput = null;
                     client.sOutput.close();
+                    client.sOutput = null;
                     client.socket.close();
+                    client.socket = null;
+
                     break;
                 }
                 else if (mes.equalsIgnoreCase("/lists")){
@@ -200,8 +209,13 @@ final class ChatClient {
         public void run() {
             try {
                 while (true) {
+                    if (sInput == null){
+                        break;
+                    }
                     String msg = (String) sInput.readObject();
                     System.out.print(msg);
+                    System.out.print("> ");
+
                 }
             } catch (IOException | ClassNotFoundException e) {
                 return ;

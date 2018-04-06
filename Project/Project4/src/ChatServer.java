@@ -1,6 +1,3 @@
-import com.sun.deploy.util.SessionState;
-import com.sun.tools.example.debug.tty.TTY;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -49,6 +46,7 @@ final class ChatServer {
                 }
                 if (!isRepeated) {
                     clients.add((ClientThread) r);
+                    ((ClientThread) r).writeMessage("Welcome today! " + ((ClientThread) r).username + "\n");
                     t.start();
                 }
                 else{
@@ -102,12 +100,22 @@ final class ChatServer {
     private synchronized void directMessage(String message, String username, String sentUser) {
         String time = sdf.format(new Date());
         String formattedMessage = time +  " " + sentUser + " => " + username + ": " + message + "\n";
-        System.out.print(formattedMessage);
+        if (username.equalsIgnoreCase(sentUser)) {
+            formattedMessage = "System Note: You cannot send a direct message to yourself\n";
+            for (ClientThread clientThread : clients) {
+                if (clientThread.username.equalsIgnoreCase(username)) {
+                    clientThread.writeMessage(formattedMessage);
+                }
+            }
+        }
+        else {
+            System.out.print(formattedMessage);
 
-        for (ClientThread clientThread : clients) {
-            if (clientThread.username.equalsIgnoreCase(username) ||
-                    clientThread.username.equalsIgnoreCase(sentUser)) {
-                clientThread.writeMessage(formattedMessage);
+            for (ClientThread clientThread : clients) {
+                if (clientThread.username.equalsIgnoreCase(username) ||
+                        clientThread.username.equalsIgnoreCase(sentUser)) {
+                    clientThread.writeMessage(formattedMessage);
+                }
             }
         }
     }
@@ -208,7 +216,7 @@ final class ChatServer {
                 if (cm.getType() == ChatMessage.MESSAGE) {
                     broadcast(cm.getMessage(), username);
                 } else if (cm.getType() == ChatMessage.LOGOUT) {
-                    broadcast("LOGOUT " + username + ": " + cm.getMessage(), username);
+                    broadcast("LOGOUT", username);
                     try {
                         sInput.close();
                         sOutput.close();
@@ -227,9 +235,17 @@ final class ChatServer {
 //                    }
 //                }
                 } else if (cm.getType() == ChatMessage.LIST) {
-                    String output = "List of users connected right now: ";
+                    String output = "";
                     for (ClientThread c : clients) {
-                        output += c.username + " ";
+                        if (!c.username.equalsIgnoreCase(username)) {
+                            output += c.username + " ";
+                        }
+                    }
+                    if (output.isEmpty()){
+                        output = "You are the only one who is connecting to the server";
+                    }
+                    else{
+                        output = "List of users connected right now: " + output;
                     }
                     for (ClientThread c : clients) {
                         if (c.username.equalsIgnoreCase(username)) {

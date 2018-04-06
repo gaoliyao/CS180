@@ -33,7 +33,6 @@ public final class QuestionOne {
         int maxValue = 0;
         int count = 0;
         for (int i=0;i<values.length;i++){
-            count = 0;
             for (int j = 0; j < values.length; j++) {
                 if (values[i] == values[j]){
                     count++;
@@ -44,8 +43,8 @@ public final class QuestionOne {
                 maxValue = values[i];
             }
         }
-        System.out.println("Max Count: " + Integer.toString(maxCount));
-        System.out.println(maxValue);
+//        System.out.println("Max Count: " + Integer.toString(maxCount));
+//        System.out.println(maxValue);
         return maxValue;
     } //getMode
 

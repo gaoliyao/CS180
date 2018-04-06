@@ -105,8 +105,32 @@ final class ChatServer {
         System.out.print(formattedMessage);
 
         for (ClientThread clientThread : clients) {
+            if (clientThread.username.equalsIgnoreCase(username) ||
+                    clientThread.username.equalsIgnoreCase(sentUser)) {
+                clientThread.writeMessage(formattedMessage);
+            }
+        }
+    }
+
+    /**
+     *	Sample code to use as a reference for Tic Tac Toe
+     *
+     * directMessage - sends a message to a specific username, if connected
+     * @param message - the string to be sent
+     * @param username - the user the message will be sent to
+     */
+    private synchronized void directTTTMessage(String message, String username, String sentUser) {
+        String time = sdf.format(new Date());
+        String formattedMessage = time +  " " + sentUser + " => " + username + ": " + message + "\n";
+        String formattedSystemMessage = time + " System => " + sentUser + ": " + message + "\n";
+        System.out.print(formattedMessage);
+
+        for (ClientThread clientThread : clients) {
             if (clientThread.username.equalsIgnoreCase(username)) {
                 clientThread.writeMessage(formattedMessage);
+            }
+            if (clientThread.username.equalsIgnoreCase(sentUser)) {
+                clientThread.writeMessage(formattedSystemMessage);
             }
         }
     }
@@ -197,7 +221,6 @@ final class ChatServer {
                     //break;
                 } else if (cm.getType() == ChatMessage.DM) {
                     directMessage(cm.getMessage(), cm.getRecepient(), username);
-                    directMessage(cm.getMessage(), username, username);
 //                for (ClientThread c: clients){
 //                    if (c.username.equalsIgnoreCase(cm.getRecepient())){
 //                        c.writeMessage(cm.getMessage());
@@ -222,15 +245,14 @@ final class ChatServer {
                             isInGame = true;
                             boolean isValidTurn = t.takeTurn(username, Integer.parseInt(cm.getMessage()));
                             if (isValidTurn){
-                                directMessage("\n"+t.toString(), username, "System");
-                                directMessage("\n"+t.toString(), cm.getRecepient(), username);
+                                directTTTMessage("\n"+t.toString(), cm.getRecepient(), username);
                             }
                             else{
-                                directMessage("Invalid operation!", username, "System");
+                                directTTTMessage("Invalid operation!", username, "System");
                             }
                             if (t.isFinish()){
-                                directMessage(t.winner + "won!", username, "System");
-                                directMessage(t.winner + "won!", cm.getRecepient(), "System");
+                                directTTTMessage(t.winner + "won!", username, "System");
+                                directTTTMessage(t.winner + "won!", cm.getRecepient(), "System");
                                 isFinish = true;
                                 curTTT = t;
                             }
@@ -241,18 +263,15 @@ final class ChatServer {
                     }
                     if (!isInGame){
                         curTTT = new TicTacToeGame(username, cm.getRecepient());
-                        directMessage( "Game Start!", username, "System");
-                        directMessage( "\n"+curTTT.toString(), username,  "System");
-                        directMessage( "Game Start!", cm.getRecepient(),  username);
-                        directMessage( "\n"+curTTT.toString(), cm.getRecepient(),  username);
+                        directTTTMessage( "Game Start!", cm.getRecepient(),  username);
+                        directTTTMessage( "\n"+curTTT.toString(), cm.getRecepient(),  username);
                         if (!cm.getMessage().isEmpty()){
                             boolean isValidTurn = curTTT.takeTurn(username, Integer.parseInt(cm.getMessage()));
                             if (isValidTurn){
-                                directMessage("\n"+curTTT.toString(), username, "System");
-                                directMessage("\n"+curTTT.toString(), cm.getRecepient(), username);
+                                directTTTMessage("\n"+curTTT.toString(), cm.getRecepient(), username);
                             }
                             else{
-                                directMessage("Invalid operation!", username, "System");
+                                directTTTMessage("Invalid operation!", username, "System");
                             }
                         }
                         ticTacToeGames.add(curTTT);

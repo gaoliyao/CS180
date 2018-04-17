@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="homework-twelve:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/homework_twelve_jar</output-path>
+    <root id="archive" name="homework-twelve.jar">
+      <element id="module-output" name="homework-twelve" />
+    </root>
+  </artifact>
+</component>

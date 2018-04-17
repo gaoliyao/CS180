@@ -108,18 +108,6 @@ final class ChatClient {
         String username = "";
         String server = "localhost";
         int port = 1500;
-//        if (commandSplitBySpace.length == 3){
-//            username = commandSplitBySpace[2];
-//        }
-//        if (commandSplitBySpace.length == 4){
-//            username = commandSplitBySpace[2];
-//            port = Integer.parseInt(commandSplitBySpace[3]);
-//        }
-//        if (commandSplitBySpace.length == 5){
-//            username = commandSplitBySpace[2];
-//            port = Integer.parseInt(commandSplitBySpace[3]);
-//            server = commandSplitBySpace[4];
-//        }
         if (args.length == 1){
             username = args[0];
         }
@@ -167,26 +155,11 @@ final class ChatClient {
             }
             else if (mes.contains("/ttt")){
                 String[] word = mes.split(" ");
-//                if (client.ticTacToeGame == null) {
-//                    client.ticTacToeGame = new TicTacToeGame(username, word[1]);
-//                }
                 if (word.length == 3) {
-//                    client.ticTacToeGame.takeTurn(username, Integer.parseInt(word[1]));
-//                    System.out.println(client.ticTacToeGame.toString());
                     client.sendMessage(new ChatMessage(ChatMessage.TICTACTOE, word[2], word[1]));
-//                    if (client.ticTacToeGame.isWon()){
-//                        System.out.println(client.ticTacToeGame.winner + "won the game.");
-//                        client.ticTacToeGame = null;
-//                    }
                 }
                 if (word.length == 2) {
                     client.sendMessage(new ChatMessage(ChatMessage.TICTACTOE, "", word[1]));
-//                    if (client.ticTacToeGame == null) {
-//                        client.ticTacToeGame = new TicTacToeGame(username, word[1]);
-//                    }
-//                    else {
-//                        System.out.println(client.ticTacToeGame.toString());
-//                    }
                 }
             }
                 else {

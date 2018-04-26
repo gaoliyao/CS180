@@ -16,12 +16,15 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
     public static HashMap<String, Integer> nameAndCountMap = new HashMap<>();
     public static ListView mListView;
     public static ArrayAdapter adapter;
+    public static ArrayList<String> nameList = new ArrayList<>();
+    public static ArrayList<String> valueList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

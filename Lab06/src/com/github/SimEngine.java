@@ -12,11 +12,11 @@ public class SimEngine {
         gameLogic.initGridGUI();
         gameLogic.printGridGUI();
         boolean isContinue = true;
-        sleepMethod(500);
+        sleepMethod(5000);
         while (isContinue){
             gameLogic.update();
             gameLogic.printGridGUI();
-            sleepMethod(500);
+            sleepMethod(5000);
         }
     }
 

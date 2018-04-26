@@ -52,7 +52,6 @@ public class Counter extends AppCompatActivity {
                 MainActivity.nameAndCountMap.put(name, Integer.parseInt(fab.getText().toString()));
             }
         });
-
     }
 
 

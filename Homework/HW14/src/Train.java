@@ -18,7 +18,7 @@ public class Train {
     private Car caboose;
 
     /**
-     * Creates a Train with no cars. By default, the maxCarSize will be set to 1.
+     * Creates a Train with no cars. By default, the newCarSize will be set to 1.
      */
     public Train() {
         this.newCarSize = 1;
@@ -29,13 +29,52 @@ public class Train {
     /**
      * Creates a Train with the passed cars in the passed array. The Cars should be ordered according to the order by
      * which they are presented in the array, with the Car at index 0 being first. Any null values in the cars array
-     * should be ignored. By default, the maxCarSize will be set to 1.
+     * should be ignored. By default, the newCarSize will be set to 1.
      *
      * @param cars The cars to be linked together as part of this train
      */
     public Train(Car[] cars) {
-        this.newCarSize = cars.length;
+        this.newCarSize = 1;
+        int carNum = 0;
+        for (Car c: cars){
+            if (c != null){
+                carNum++;
+            }
+        }
+        Car[] normalizedCars = new Car[carNum];
+        int index = 0;
+        for (Car c: cars){
+            if (c != null){
+                normalizedCars[index] = c;
+                index++;
+            }
+        }
+        if (normalizedCars.length == 0){
+            engine = null;
+            caboose = null;
+        }
+        else{
+            setUp(normalizedCars);
+        }
+    }
 
+    private void setUp(Car[] cars){
+        setUp(cars, 0);
+    }
+
+    private void setUp(Car[] cars, int index){
+        if (index == 0){
+            this.engine = cars[index];
+            setUp(cars, index + 1);
+        }
+        else if (index == cars.length - 1){
+            this.caboose = cars[index];
+            return;
+        }
+        else{
+            cars[index].setNextCar(cars[index + 1]);
+            setUp(cars, index + 1);
+        }
     }
 
     /**
@@ -43,7 +82,7 @@ public class Train {
      * @return the size of Cars that are newly created as a result of adding elements to the train or appendCar(T cargo).
      */
     public int getNewCarSize() {
-        return -1;
+        return this.newCarSize;
     }
 
     /**
@@ -51,7 +90,7 @@ public class Train {
      * of adding elements to the train or appendCar(T cargo).
      */
     public void setNewCarSize(int newCarSize) {
-
+        this.newCarSize = newCarSize;
     }
 
     /**
@@ -59,7 +98,7 @@ public class Train {
      * @return the first Car in the Train or null if the Train has no Cars.
      */
     public Car getEngine() {
-        return null;
+        return engine;
     }
 
     /**
@@ -67,7 +106,7 @@ public class Train {
      * @return the last Car in the Train or null if the Train has no Cars.
      */
     public Car getCaboose() {
-        return null;
+        return caboose;
     }
 
     /**
@@ -75,7 +114,13 @@ public class Train {
      * @return the number of Cars on this Train.
      */
     public int size() {
-        return -1;
+        int size = 0;
+        Car car = engine;
+        while (car != null){
+            size++;
+            car = car.getNextCar();
+        }
+        return size;
     }
 
     /**
@@ -85,7 +130,19 @@ public class Train {
      * @throws IndexOutOfBoundsException if the index is out of range (zero-based)
      */
     public Car get(int carIndex) throws IndexOutOfBoundsException {
-        return null;
+        Car car = null;
+        if (carIndex < 0 || carIndex >= size()){
+            throw new IndexOutOfBoundsException();
+        }
+        else{
+            int index = 0;
+            car = engine;
+            while (index != carIndex){
+                car = car.getNextCar();
+                index++;
+            }
+        }
+        return car;
     }
 
     /**
@@ -96,7 +153,21 @@ public class Train {
      * @throws IndexOutOfBoundsException if the index is out of range for either the Train or the Car (zero-based)
      */
     public Object get(int carIndex, int cargoIndex) throws IndexOutOfBoundsException {
-        return null;
+        Car car = null;
+        Object obj = null;
+        if (carIndex < 0 || carIndex >= size()){
+            throw new IndexOutOfBoundsException();
+        }
+        else{
+            int index = 0;
+            car = engine;
+            while (index != carIndex){
+                car = car.getNextCar();
+                index++;
+            }
+            obj = car.get(cargoIndex);
+        }
+        return obj;
     }
 
     /**
@@ -105,16 +176,33 @@ public class Train {
      * @param car Car to append to the end of the Train.
      */
     public void appendCar(Car car) {
-
+        if (this.engine == null){
+            this.engine = car;
+        }
+        if (this.caboose != null) {
+            this.caboose.setNextCar(car);
+        }
+        this.caboose = car;
     }
 
     /**
-     * Connects a new, empty Car to the end of the Train. The type of cargo contained by this Car will be the same type
-     * as the passed cargo. The size of the Car should be set to the max Car size for this Train.
+     * Connects a new, empty Car to the end of the Train. The cargo argument can be added to the Car or ignored.
      * @param cargo A sample of cargo the new Car will be carrying.
      */
     public void appendCar(Object cargo) {
-
+        Car car = new Car(this.newCarSize);
+        try {
+            car.addCargo(cargo);
+        } catch (FullCarException e) {
+            e.printStackTrace();
+        }
+        if (this.engine == null){
+            this.engine = car;
+        }
+        if (!(this.caboose == null)) {
+            this.caboose.setNextCar(car);
+        }
+        this.caboose = car;
     }
 
     /**
@@ -125,7 +213,20 @@ public class Train {
      * @throws IndexOutOfBoundsException if the index is out of range for either the Train or the Car (zero-based)
      */
     public void set(int carIndex, int cargoIndex, Object cargo) throws IndexOutOfBoundsException {
-
+        Car car = null;
+        Object obj = null;
+        if (carIndex < 0 || carIndex >= size()){
+            throw new IndexOutOfBoundsException();
+        }
+        else{
+            int index = 0;
+            car = engine;
+            while (index != carIndex){
+                car = car.getNextCar();
+                index++;
+            }
+            car.set(cargoIndex, cargo);
+        }
     }
 
     /**
@@ -135,21 +236,45 @@ public class Train {
      * @param cargo Additional cargo to place on the Train
      */
     public void addCargo(Object cargo) {
-
+        Car car = engine;
+        boolean isAdded = false;
+        while (car != null){
+            if (!car.isFull()){
+                try {
+                    car.addCargo(cargo);
+                    isAdded = true;
+                    break;
+                } catch (FullCarException e) {
+                    e.printStackTrace();
+                }
+            }
+            else{
+                car = car.getNextCar();
+            }
+        }
+        if (!isAdded){
+            appendCar(cargo);
+        }
     }
 
     /**
      * Empties each Car of the Train. The Cars should not be removed from the Train.
      */
     public void emptyTrainCars() {
-
+        Car car = engine;
+        while (car != null){
+            for (int i = 0; i < car.capacity(); i++) {
+                car.set(i, null);
+            }
+            car = car.getNextCar();
+        }
     }
 
     /**
      * Train says (prints on a new line) "Toot toot!"
      */
     public void boilerUp() {
-
+        System.out.println("Toot toot!");
     }
 
 }

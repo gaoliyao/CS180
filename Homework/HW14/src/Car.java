@@ -27,16 +27,21 @@ public class Car {
      */
     public void addCargo(Object cargo) throws FullCarException{
         boolean isFull = true;
-        for (int i = 0; i < this.cargo.length; i++) {
-            if (this.cargo[i] == null){
-                this.cargo[i] = cargo;
-                isFull = false;
-                break;
-            }
-        }
+        isFull = addCargo(cargo, 0);
         if (isFull){
             throw new FullCarException();
         }
+    }
+
+    private  boolean addCargo(Object cargo, int index){
+        if (index == this.cargo.length){
+            return true;
+        }
+        if (this.cargo[index] == null){
+            this.cargo[index] = cargo;
+            return false;
+        }
+        return addCargo(cargo, index+1);
     }
 
     /**
@@ -60,14 +65,19 @@ public class Car {
      * @return the number of elements currently stored in this Car
      */
     public int size() {
-        int size = 0;
-        for (Object o: this.cargo){
-            if (o != null)
-            {
-                size++;
-            }
+        return size(0);
+    }
+
+    private int size(int index){
+        if (index == this.cargo.length){
+            return 0;
         }
-        return size;
+        if (this.cargo[index] != null){
+            return 1+size(index+1);
+        }
+        else{
+            return size(index+1);
+        }
     }
 
 
@@ -79,12 +89,10 @@ public class Car {
      * @throws IndexOutOfBoundsException if the index is out of range (zero-based)
      */
     public Object get(int index) throws IndexOutOfBoundsException{
-        if (index < 0 || index >= this.cargo.length){
+        if (index < 0 || index >= capacity()){
             throw new IndexOutOfBoundsException();
         }
-        Object element = this.cargo[index];
-        this.cargo[index] = null;
-        return element;
+        return this.cargo[index];
     }
 
     /**
@@ -105,17 +113,17 @@ public class Car {
      * @return true if each position in the cargo array is not null, and returns false otherwise.
      */
     public boolean isFull() {
-        for (Object o: this.cargo){
-            if (o == null){
-                return false;
-            }
+        if (size() == capacity()){
+            return true;
         }
-        return true;
+        else {
+            return false;
+        }
     }
 
     /**
      * Sets this Car's nextCar field to reference the passed Car
-     * @param nextCar Car for this Car to reference
+     * @param nextCar Car this Car to reference
      */
     public void setNextCar(Car nextCar){
         this.nextCar = nextCar;
